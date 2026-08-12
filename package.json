@@ -1,7 +1,7 @@
 {
-  "name": "ohms-railway-backend",
+  "name": "deedxchange-backend",
   "version": "1.0.0",
-  "description": "Simple Railway backend for OHMS",
+  "description": "Railway backend service for the DeedXchange game",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {

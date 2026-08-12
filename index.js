@@ -20,8 +20,8 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.status(200).json({
     ok: true,
-    message: "OHMS Railway backend is running",
-    service: "ohms-backend"
+    message: "DeedXchange Railway backend is running",
+    service: "deedxchange-backend"
   });
 });
 
@@ -61,5 +61,5 @@ app.use((req, res) => {
   Start server.
 */
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`OHMS backend running on port ${PORT}`);
+  console.log(`DeedXchange backend running on port ${PORT}`);
 });
