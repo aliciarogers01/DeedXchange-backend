@@ -41,6 +41,7 @@ function publicPlayer(player) {
   return {
     userId: player.user_id,
     username: player.username,
+    address: player.address,
     city: player.city,
     state: player.state,
     zip: player.zip,

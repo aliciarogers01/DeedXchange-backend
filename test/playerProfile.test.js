@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const {
   formatUserId,
   normalizeProfile,
+  parseCityState,
   validateInstallationId,
   validateProfile,
   validateProfilePhoto,
@@ -23,20 +24,46 @@ test("requires a valid JPEG or PNG player picture", () => {
 
 test("normalizes profile fields", () => {
   assert.deepEqual(
-    normalizeProfile({ username: "  Paul  R ", city: " Akron ", state: "oh", zip: "44308" }),
-    { username: "Paul R", city: "Akron", state: "OH", zip: "44308" }
+    normalizeProfile({
+      username: "  Paul  R ",
+      address: "  123  Main St ",
+      cityState: " Akron, oh ",
+      zip: "44308",
+    }),
+    { username: "Paul R", address: "123 Main St", city: "Akron", state: "OH", zip: "44308" }
   );
+});
+
+test("separates a combined City, ST entry", () => {
+  assert.deepEqual(parseCityState("Akron, oh"), { city: "Akron", state: "OH" });
+  assert.deepEqual(parseCityState("Cuyahoga Falls, OH"), {
+    city: "Cuyahoga Falls",
+    state: "OH",
+  });
+  assert.deepEqual(parseCityState("Akron Ohio"), { city: "", state: "" });
 });
 
 test("validates installation IDs and profiles", () => {
   assert.equal(validateInstallationId("9eb00d5e-f2b7-4a5d-a52d-61a85efc9338"), null);
   assert.notEqual(validateInstallationId("not-a-uuid"), null);
   assert.equal(
-    validateProfile({ username: "Player One", city: "Akron", state: "OH", zip: "44308" }),
+    validateProfile({
+      username: "Player One",
+      address: "123 Main St",
+      city: "Akron",
+      state: "OH",
+      zip: "44308",
+    }),
     null
   );
   assert.notEqual(
-    validateProfile({ username: "x", city: "A", state: "Ohio", zip: "44308-1234" }),
+    validateProfile({
+      username: "x",
+      address: "",
+      city: "A",
+      state: "Ohio",
+      zip: "44308-1234",
+    }),
     null
   );
 });

@@ -7,11 +7,24 @@ function cleanSpaces(value) {
   return String(value || "").trim().replace(/\s+/g, " ");
 }
 
+function parseCityState(value) {
+  const match = cleanSpaces(value).match(/^(.{2,80}),\s*([A-Za-z]{2})$/);
+  if (!match) {
+    return { city: "", state: "" };
+  }
+  return {
+    city: cleanSpaces(match[1]),
+    state: match[2].toUpperCase(),
+  };
+}
+
 function normalizeProfile(input) {
+  const combinedLocation = parseCityState(input.cityState);
   return {
     username: cleanSpaces(input.username),
-    city: cleanSpaces(input.city),
-    state: cleanSpaces(input.state).toUpperCase(),
+    address: cleanSpaces(input.address),
+    city: cleanSpaces(input.city) || combinedLocation.city,
+    state: cleanSpaces(input.state).toUpperCase() || combinedLocation.state,
     zip: cleanSpaces(input.zip),
   };
 }
@@ -26,6 +39,9 @@ function validateInstallationId(installationId) {
 function validateProfile(profile) {
   if (!USERNAME_PATTERN.test(profile.username)) {
     return "Username must be 3–24 characters and may use letters, numbers, spaces, dots, underscores, and hyphens.";
+  }
+  if (profile.address.length < 3 || profile.address.length > 120) {
+    return "Address must be 3–120 characters.";
   }
   if (profile.city.length < 2 || profile.city.length > 80) {
     return "City must be 2–80 characters.";
@@ -71,6 +87,7 @@ function validateProfilePhoto(photoBase64, photoMimeType) {
 module.exports = {
   formatUserId,
   normalizeProfile,
+  parseCityState,
   validateInstallationId,
   validateProfile,
   validateProfilePhoto,

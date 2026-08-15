@@ -36,6 +36,7 @@ async function initializeSchema() {
       user_id VARCHAR(14) NOT NULL UNIQUE,
       device_key_hash CHAR(64) NOT NULL UNIQUE,
       username VARCHAR(24) NOT NULL,
+      address VARCHAR(120),
       city VARCHAR(80) NOT NULL,
       state CHAR(2) NOT NULL,
       zip CHAR(5) NOT NULL,
@@ -47,6 +48,7 @@ async function initializeSchema() {
 
     ALTER TABLE players ADD COLUMN IF NOT EXISTS photo_data BYTEA;
     ALTER TABLE players ADD COLUMN IF NOT EXISTS photo_mime VARCHAR(32);
+    ALTER TABLE players ADD COLUMN IF NOT EXISTS address VARCHAR(120);
 
     CREATE UNIQUE INDEX IF NOT EXISTS players_username_lower_unique
       ON players (LOWER(username));
@@ -65,7 +67,7 @@ async function ensureDatabaseReady() {
 
 async function findPlayerByDeviceHash(deviceKeyHash) {
   const result = await getPool().query(
-    `SELECT user_id, username, city, state, zip, photo_data, photo_mime, created_at
+    `SELECT user_id, username, address, city, state, zip, photo_data, photo_mime, created_at
        FROM players
       WHERE device_key_hash = $1`,
     [deviceKeyHash]
@@ -73,7 +75,7 @@ async function findPlayerByDeviceHash(deviceKeyHash) {
   return result.rows[0] || null;
 }
 
-async function createPlayer({ deviceKeyHash, username, city, state, zip, photoData, photoMime }) {
+async function createPlayer({ deviceKeyHash, username, address, city, state, zip, photoData, photoMime }) {
   const database = getPool();
   const client = await database.connect();
 
@@ -81,7 +83,7 @@ async function createPlayer({ deviceKeyHash, username, city, state, zip, photoDa
     await client.query("BEGIN");
 
     const existing = await client.query(
-      `SELECT user_id, username, city, state, zip, photo_data, photo_mime, created_at
+      `SELECT user_id, username, address, city, state, zip, photo_data, photo_mime, created_at
          FROM players
         WHERE device_key_hash = $1
         FOR UPDATE`,
@@ -101,10 +103,10 @@ async function createPlayer({ deviceKeyHash, username, city, state, zip, photoDa
 
     const inserted = await client.query(
       `INSERT INTO players
-        (player_number, user_id, device_key_hash, username, city, state, zip, photo_data, photo_mime)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       RETURNING user_id, username, city, state, zip, photo_data, photo_mime, created_at`,
-      [playerNumber, userId, deviceKeyHash, username, city, state, zip, photoData, photoMime]
+        (player_number, user_id, device_key_hash, username, address, city, state, zip, photo_data, photo_mime)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING user_id, username, address, city, state, zip, photo_data, photo_mime, created_at`,
+      [playerNumber, userId, deviceKeyHash, username, address, city, state, zip, photoData, photoMime]
     );
 
     await client.query("COMMIT");
